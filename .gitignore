@@ -36,12 +36,3 @@ CMakeCache.txt
 cmake_install.cmake
 CTestTestfile.cmake
 Testing/
-
-# .github/workflows/ci.yml exists on disk and is correct/tested, but this
-# session's git credential lacks the OAuth "workflow" scope GitHub requires
-# to push anything under .github/workflows/, and the GitHub API write path
-# has been failing on every retry too (see session history/PR description).
-# Ignored here so it doesn't sit as a permanently-unpushable tracked file;
-# remove this entry once a credential with `workflow` scope is available,
-# then `git add -f .github/workflows/ci.yml` and commit it for real.
-.github/workflows/ci.yml

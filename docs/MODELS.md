@@ -112,6 +112,5 @@ purpose is that a C++ test can predict their output exactly:
 - `fixed_gain_speaker.onnx` -- `SpeakerIsolation` stage, `output = 0.25` (constant)
 - `stateful_diff_denoise.onnx` -- `Denoise` stage with state: `output = input - state_in`, `state_out = input`
 
-CI regenerates these and diffs against what's committed
-(`.github/workflows/ci.yml`'s "Verify test-model fixtures are reproducible"
-step) to catch the generator and the committed fixtures drifting apart.
+Regenerate and diff before committing a change to the generator, to catch
+it drifting from the committed fixtures.
