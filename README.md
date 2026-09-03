@@ -82,6 +82,7 @@ docs/                   ARCHITECTURE.md, MODELS.md, PLATFORMS.md
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) -- how the pieces fit together and how each was verified
 - [docs/MODELS.md](docs/MODELS.md) -- the ONNX tensor contract each pipeline stage expects, and how to bring your own trained models
 - [docs/PLATFORMS.md](docs/PLATFORMS.md) -- per-OS integration approach and status, expanding on the table above
+- [docs/KRISP_RESEARCH.md](docs/KRISP_RESEARCH.md) -- primary-sourced research on what Krisp actually ships, and a gap analysis against this repo
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## License
