@@ -24,6 +24,14 @@
   [docs/MODELS.md](docs/MODELS.md). If you need a new `StageKind` or a
   different tensor shape, update that doc in the same change.
 
+## What to work on
+
+[docs/ROADMAP.md](docs/ROADMAP.md) is the current, prioritized task list
+-- everything on it traces back to [docs/KRISP_RESEARCH.md](docs/KRISP_RESEARCH.md)
+(primary-sourced research on what Krisp actually ships) or a known hole in
+this repo's own state. Pick an unchecked item, or open an issue if you're
+looking at a gap that isn't listed yet.
+
 ## Building and testing
 
 See the Quick start in [README.md](README.md). In short:

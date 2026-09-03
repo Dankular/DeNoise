@@ -184,43 +184,11 @@ Being honest about scope matters as much as being honest about gaps:
 - **Contact-center-specific accent conversion (AC-o).** A narrow B2B
   product; not core to a general noise-suppression driver.
 
-## What to do about it, roughly in priority order
+## What to do about it
 
-This is a proposal, not a plan already agreed -- flagging decisions that
-need a call before implementation:
-
-1. **Get one real trained model into the pipeline.** Everything else is
-   secondary to this; right now the entire pipeline is provably-correct
-   plumbing around zero actual noise suppression. This needs a scope
-   decision: train something from scratch (real effort, real data,
-   real compute), or find and legitimately license/adapt an existing
-   *open* model (e.g. something published with a permissive license and
-   real ONNX export) that fits our `docs/MODELS.md` contract or can be
-   wrapped to fit it. Nothing currently in this repo attempts either.
-2. **Add an inbound (speaker-side) processing path.** Currently every
-   platform backend only touches the mic-capture direction. Krisp treats
-   inbound as a distinct, shipped capability (NC-i). Architecturally this
-   likely means a second `DenoisePipeline` instance per platform backend,
-   not a new core concept.
-3. **Solve "appears as a selectable microphone" on at least one platform
-   for real.** Right now zero platforms achieve this. Linux is the
-   closest (per `platform/linux/README.md`, needs either a two-node
-   `libpipewire-module-filter-chain`-style split or wrapping with
-   `pw-loopback`) and has a real, tested processing core to build on --
-   it's the natural first target.
-4. **Surface `FrameContext`'s existing telemetry** (`vadProbability`,
-   `speakerScore`) through the CLI and platform backends instead of
-   discarding it after each frame. This is cheap relative to items 1-3
-   (the data already exists internally) and closes part of the telemetry
-   gap.
-5. **Measure actual latency** on the Linux backend (the one platform with
-   a real, running integration) so "how does this compare to Krisp's
-   ~25ms example" has an actual answer instead of an absence.
-6. **Consider a model-variant concept in `Stage`/`OnnxModel`** (e.g. a
-   "quality" vs. "low-CPU" model path per stage) -- but only once (1) has
-   produced at least one real model to have variants *of*. Premature
-   before that.
-
-Items 2-6 all sit on top of item 1 in the sense that they process/expose/
-tune something that, right now, doesn't exist -- a real trained model is
-the load-bearing gap everything else is downstream of.
+Turned into an actual tracked, prioritized task list in
+[docs/ROADMAP.md](ROADMAP.md) rather than duplicated here -- that file is
+the up-to-date, checkable version; this document stays focused on the
+research and the gap analysis it's based on. The short version: a real
+trained model is the one load-bearing gap everything else in that roadmap
+sits on top of.
