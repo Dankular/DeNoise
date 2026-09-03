@@ -1,0 +1,101 @@
+name: CI (Linux)
+
+# Only the Linux backend is exercised here -- see platform/macos and
+# platform/windows READMEs for why those aren't (and can't yet be) built in
+# CI: platform/macos needs a macOS runner and Xcode; platform/windows'
+# actual COM shim (DeNoiseApo.h) needs the Windows SDK and isn't wired into
+# the CMake build at all yet (only its portable half is, and that part
+# *is* covered here since it has no OS dependency).
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  ONNXRUNTIME_VERSION: 1.19.2
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake pkg-config \
+            libpipewire-0.3-dev libspa-0.2-dev
+
+      - name: Cache ONNX Runtime
+        id: cache-ort
+        uses: actions/cache@v4
+        with:
+          path: third_party/onnxruntime-linux-x64
+          key: onnxruntime-linux-x64-${{ env.ONNXRUNTIME_VERSION }}
+
+      - name: Fetch ONNX Runtime
+        if: steps.cache-ort.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p third_party
+          curl -sSL -o /tmp/onnxruntime.tgz \
+            "https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz"
+          tar -xf /tmp/onnxruntime.tgz -C third_party
+          mv "third_party/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}" third_party/onnxruntime-linux-x64
+
+      - name: Configure
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DONNXRUNTIME_ROOT="${{ github.workspace }}/third_party/onnxruntime-linux-x64"
+
+      - name: Build
+        run: cmake --build build -j"$(nproc)"
+
+      - name: Unit tests (ctest)
+        run: ctest --test-dir build --output-on-failure
+
+      - name: CLI end-to-end smoke test
+        run: |
+          python3 - <<'EOF'
+          import wave, struct, math
+          sr = 44100
+          n = sr  # 1 second
+          with wave.open('/tmp/tone.wav', 'w') as w:
+              w.setnchannels(1); w.setsampwidth(2); w.setframerate(sr)
+              frames = bytearray()
+              for i in range(n):
+                  v = 0.3 * math.sin(2 * math.pi * 440 * i / sr)
+                  frames += struct.pack('<h', int(max(-1, min(1, v)) * 32767))
+              w.writeframes(bytes(frames))
+          EOF
+          export LD_LIBRARY_PATH="${{ github.workspace }}/third_party/onnxruntime-linux-x64/lib:$LD_LIBRARY_PATH"
+          ./build/tools/denoise_cli/denoise-cli --in /tmp/tone.wav --out /tmp/tone_passthrough.wav
+          ./build/tools/denoise_cli/denoise-cli --in /tmp/tone.wav --out /tmp/tone_gain.wav \
+            --denoise-model models/test/gain_denoise.onnx
+          python3 - <<'EOF'
+          import wave, struct
+          def peak(path):
+              with wave.open(path) as w:
+                  n = w.getnframes()
+                  vals = struct.unpack('<%dh' % n, w.readframes(n))
+                  return max(abs(v) for v in vals)
+          p1, p2 = peak('/tmp/tone_passthrough.wav'), peak('/tmp/tone_gain.wav')
+          ratio = p2 / p1
+          print(f"passthrough peak={p1} gain peak={p2} ratio={ratio:.4f}")
+          assert abs(ratio - 0.5) < 0.01, f"expected ~0.5x gain, got {ratio}"
+          EOF
+
+      - name: Verify test-model fixtures are reproducible
+        run: |
+          pip install --quiet onnx numpy
+          python3 scripts/gen_test_models.py --out-dir /tmp/regenerated
+          for f in models/test/*.onnx; do
+            name=$(basename "$f")
+            cmp "$f" "/tmp/regenerated/$name" || {
+              echo "::error::models/test/$name is stale -- re-run scripts/gen_test_models.py and commit the result"
+              exit 1
+            }
+          done

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-License-Identifier: Apache-2.0
+
+  UNVERIFIED: written from AudioServerPlugIn.h's own description of the
+  required CFPlugIn keys (CFPlugInFactories/CFPlugInTypes mapping the
+  factory function to kAudioServerPlugInTypeUUID) plus the
+  AudioServerPlugIn_* keys documented in that header. This has never been
+  loaded by coreaudiod. Before trusting it, cross-check against a working
+  reference -- gavv/libASPL (https://github.com/gavv/libASPL), a real,
+  actively maintained C++17 library for CoreAudio AudioServerPlugIns, is a
+  much better-tested source for the exact packaging than this file.
+
+  kAudioServerPlugInTypeUUID (443ABAB8-E7B3-491A-B985-BEB9187030DB) is
+  copied verbatim from AudioHardwareBase.h, not invented. The
+  "denoise-factory" key below is this project's own arbitrary factory
+  identifier and has no required value -- CMake's MODULE/BUNDLE target
+  substitutes the surrounding CFBundle keys.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>${MACOSX_BUNDLE_EXECUTABLE_NAME}</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.denoise.audiodriver</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>DeNoiseAudioDriver</string>
+	<key>CFBundlePackageType</key>
+	<string>BNDL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+
+	<key>CFPlugInFactories</key>
+	<dict>
+		<key>denoise-factory</key>
+		<string>DeNoiseAudioDriverFactory</string>
+	</dict>
+	<key>CFPlugInTypes</key>
+	<dict>
+		<key>443ABAB8-E7B3-491A-B985-BEB9187030DB</key>
+		<array>
+			<string>denoise-factory</string>
+		</array>
+	</dict>
+</dict>
+</plist>

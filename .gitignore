@@ -1,0 +1,38 @@
+# Build outputs
+build/
+build-*/
+out/
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.exe
+*.a
+*.lib
+
+# Third-party downloaded binaries (fetched by scripts/fetch_onnxruntime.sh)
+third_party/onnxruntime.tgz
+third_party/onnxruntime-*/
+
+# Model weights (large binary files; see docs/MODELS.md for how to obtain/train them)
+models/*.onnx
+!models/test/*.onnx
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Editor / OS cruft
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# CTest / CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
